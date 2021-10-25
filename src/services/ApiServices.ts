@@ -17,6 +17,6 @@ export default {
 		return apiClient.get('/Movies/' + id)
 	},
 	async putItem(id: any, film: any) {
-		apiClient.put('/Movies/' + id, film)
+		await apiClient.put('/Movies/' + id, film)
 	},
 }

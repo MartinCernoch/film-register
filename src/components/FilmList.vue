@@ -29,6 +29,21 @@ const getFilmList = () => {
 		})
 }
 
+const putFilmToDatabase = (putFilm: FilmListItem | undefined) => {
+	if (putFilm !== undefined) {
+		ApiServices.putItem(putFilm.id, putFilm)
+			.catch((error) => {
+				console.log(error)
+			})
+			.finally(() => {
+				getFilmList()
+				state.editFilmDetail = false
+			})
+	} else {
+		state.editFilmDetail = false
+	}
+}
+
 const filteredFilms = computed(() => {
 	return state.filmList.filter((item: FilmListItem) => {
 		return item?.name?.toLowerCase().includes(props.searchQuery)
@@ -61,7 +76,7 @@ getFilmList()
 	<FilmEdit
 		v-if="state.editFilmDetail"
 		:film="state.editFilm"
-		v-on:hide="toggleModal($event)"
+		v-on:hide="putFilmToDatabase($event)"
 	/>
 
 	<main class="p-4 grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">

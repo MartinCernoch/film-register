@@ -62,7 +62,13 @@ const toggleEdit = (e: any) => {
 				<h1>
 					{{ film.name }}
 				</h1>
-				<div class="hover:cursor-pointer px-2" @click="toggleModal">X</div>
+				<div
+					class="hover:cursor-pointer px-2"
+					@click="toggleModal"
+					title="Close"
+				>
+					X
+				</div>
 			</header>
 			<main class="flex items-stretch">
 				<div class="flex-none h-full text-teal-900 p-4 pr-8">
@@ -97,12 +103,14 @@ const toggleEdit = (e: any) => {
 					</div>
 				</div>
 				<div class="p-4">
-					<div>
-						{{
-							film.description ||
-							film.storyline ||
-							'Missing description of the film.'
-						}}
+					<div v-if="film.storyline">
+						{{ film.storyline }}
+					</div>
+					<div v-if="film.description">
+						{{ film.description }}
+					</div>
+					<div v-if="!(film.description || film.storyline)">
+						Missing description or storyline of the film.
 					</div>
 					<div class="pt-4">
 						<span class="font-bold block text-teal-900">Actors:</span>
@@ -127,6 +135,7 @@ const toggleEdit = (e: any) => {
 					bg-teal-200
 					rounded-b-lg
 				"
+				title="Close to edit"
 			>
 				EDIT
 			</footer>

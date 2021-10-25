@@ -1,11 +1,14 @@
 <script setup lang="ts">
+import { reactive } from 'vue'
 import { FilmListItem } from '../types'
 
 const props = defineProps<{
 	film: FilmListItem
 }>()
 
-const film: FilmListItem = props.film
+const state = reactive({
+	film: props.film,
+})
 </script>
 
 <template>

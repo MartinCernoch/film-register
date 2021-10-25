@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { FilmListItem } from '../types'
-import ApiServices from '../services/ApiServices'
 
 const props = defineProps<{
 	film: FilmListItem
 }>()
 
-const film: FilmListItem = props.film
+const film: FilmListItem = { ...props.film }
 
 const emit = defineEmits<{
-	(e: 'hide'): void
+	(e: 'hide', filmToPut?: FilmListItem): void
 }>()
 
 const toggleModal = () => {
 	emit('hide')
+}
+
+const togglePut = () => {
+	emit('hide', film)
 }
 
 const changeToArray = (e: string) => e.split(',').map((e: string) => e.trim())
@@ -21,19 +24,16 @@ const changeToArray = (e: string) => e.split(',').map((e: string) => e.trim())
 const changeActors = (event: any) => {
 	film.actors = changeToArray(event.target.value)
 }
-
-const putFilmList = (id: any) => {
-	ApiServices.putItem(id, film)
-		.then(() => toggleModal())
-		.catch((error) => {
-			console.log(error)
-		})
+const changeWriters = (event: any) => {
+	film.writer = changeToArray(event.target.value)
+}
+const changeCategories = (event: any) => {
+	film.categories = changeToArray(event.target.value)
 }
 </script>
 
 <template>
 	<div
-		@click.self="toggleModal"
 		class="
 			fixed
 			top-0
@@ -60,92 +60,328 @@ const putFilmList = (id: any) => {
 				rounded-t-lg
 			"
 		>
-			<header
+			<div
 				class="
-					w-full
-					p-4
-					text-xl text-white
+					hover:cursor-pointer
+					rounded-full
+					px-2
+					pb-1
+					fixed
+					top-4
+					left-1/2
+					-ml-8
+					w-16
+					h-8
+					text-xl
 					font-bold
+					text-center
 					bg-teal-900
-					flex
-					justify-between
+					text-white
 				"
+				title="Close"
+				@click="toggleModal"
 			>
-				<h1>Film name:</h1>
+				X
+			</div>
+			<div class="p-4 md:px-6 pb-2">
+				<label
+					class="text-teal-900 text-sm bg-white font-semibold"
+					for="filmName"
+				>
+					Film name
+				</label>
 				<input
+					class="
+						focus:border-teal-500
+						focus:ring-1
+						focus:ring-teal-500
+						focus:outline-none
+						w-full
+						text-sm text-black
+						border border-teal-200
+						rounded-md
+						py-1
+						pl-2
+					"
 					type="text"
-					class="text-teal-900"
-					:placeholder="film.name"
 					v-model="film.name"
+					id="filmName"
 				/>
-				<div class="hover:cursor-pointer px-2" @click="toggleModal">X</div>
-			</header>
-			<main class="flex items-stretch">
-				<div class="flex-none h-full text-teal-900 p-4 pr-8">
-					<div>
-						<span class="font-bold block">Release date:</span>
-						<span>{{ film['release-date'] || film.year }}</span>
-						<input
-							type="date"
-							name="trip-start"
-							v-model="film['release-date']"
-							min="1900-01-01"
-							max="2100-12-31"
-							class="block"
-						/>
-						<input
-							type="number"
-							min="1900"
-							max="2100"
-							v-model.number="film.year"
-							class="block"
-						/>
-					</div>
-					<div class="pt-4">
-						<span class="font-bold block">Film length:</span>
-						<span>{{ film.runtime + ' minutes' }}</span>
-					</div>
-					<div class="pt-4">
-						<span class="font-bold block">Categories:</span>
-						<span v-for="categorie in film.categories" class="block">{{
-							categorie
-						}}</span>
-					</div>
-					<div class="pt-4">
-						<span class="font-bold block">Director:</span>
-						<span>{{ film.director }}</span>
-					</div>
-					<div class="pt-4">
-						<span class="font-bold block">Writer/Writers:</span>
-						<span v-if="Array.isArray(film.writer)">
-							<span v-for="writer in film.writer" class="block">
-								{{ writer }}
-							</span>
-						</span>
-						<span v-else name="single">
-							{{ film.writer }}
-						</span>
-					</div>
+			</div>
+			<div class="px-4 md:px-6 pb-2" v-if="film.storyline">
+				<label
+					class="text-teal-900 text-sm bg-white font-semibold"
+					for="filmStoryLine"
+				>
+					Film storyline
+				</label>
+				<textarea
+					class="
+						focus:border-teal-500
+						focus:ring-1
+						focus:ring-teal-500
+						focus:outline-none
+						w-full
+						text-sm text-black
+						border border-teal-200
+						rounded-md
+						py-1
+						pl-2
+					"
+					rows="3"
+					type="text"
+					v-model="film.storyline"
+					id="filmStoryLine"
+				></textarea>
+			</div>
+			<div class="px-4 md:px-6 pb-2" v-if="film.description">
+				<label
+					class="text-teal-900 text-sm bg-white font-semibold"
+					for="filmDesc"
+				>
+					Film description
+				</label>
+				<textarea
+					class="
+						focus:border-teal-500
+						focus:ring-1
+						focus:ring-teal-500
+						focus:outline-none
+						w-full
+						text-sm text-black
+						border border-teal-200
+						rounded-md
+						py-1
+						pl-2
+					"
+					rows="3"
+					type="text"
+					v-model="film.description"
+					id="filmDesc"
+				></textarea>
+			</div>
+			<div
+				v-if="!(film.storyline || film.description)"
+				class="p-4 md:px-6 pt-3 bg-white text-teal-900 text-sm font-semibold"
+			>
+				Missing description or storyline of the film.
+			</div>
+			<div class="px-4 md:px-6 pb-2">
+				<label
+					class="text-teal-900 text-sm bg-white font-semibold"
+					for="filmCategories"
+				>
+					Categories (separate by a comma)
+				</label>
+				<textarea
+					class="
+						focus:border-teal-500
+						focus:ring-1
+						focus:ring-teal-500
+						focus:outline-none
+						w-full
+						text-sm text-black
+						border border-teal-200
+						rounded-md
+						py-1
+						pl-2
+					"
+					rows="1"
+					type="text"
+					@keyup="changeCategories"
+					id="filmCategories"
+					>{{ film.categories.join(', ') }}</textarea
+				>
+			</div>
+			<div class="px-4 md:px-6 pb-2">
+				<label
+					class="text-teal-900 text-sm bg-white font-semibold"
+					for="filmActors"
+				>
+					Actors (separate by a comma)
+				</label>
+				<textarea
+					class="
+						focus:border-teal-500
+						focus:ring-1
+						focus:ring-teal-500
+						focus:outline-none
+						w-full
+						text-sm text-black
+						border border-teal-200
+						rounded-md
+						py-1
+						pl-2
+					"
+					rows="2"
+					type="text"
+					@keyup="changeActors"
+					id="filmActors"
+					>{{ film.actors.join(', ') }}</textarea
+				>
+			</div>
+			<div class="px-4 md:px-6 pb-2" v-if="Array.isArray(film.writer)">
+				<label
+					class="text-teal-900 text-sm bg-white font-semibold"
+					for="filmWrite"
+				>
+					Writers (separate by a comma)
+				</label>
+				<textarea
+					class="
+						focus:border-teal-500
+						focus:ring-1
+						focus:ring-teal-500
+						focus:outline-none
+						w-full
+						text-sm text-black
+						border border-teal-200
+						rounded-md
+						py-1
+						pl-2
+					"
+					rows="1"
+					type="text"
+					@keyup="changeWriters"
+					id="filmWrite"
+					>{{ film.writer.join(', ') }}</textarea
+				>
+			</div>
+			<div class="px-4 md:px-6 pb-2" v-else>
+				<label
+					class="text-teal-900 text-sm bg-white font-semibold"
+					for="filmWrite"
+				>
+					Writer
+				</label>
+				<input
+					class="
+						focus:border-teal-500
+						focus:ring-1
+						focus:ring-teal-500
+						focus:outline-none
+						w-full
+						text-sm text-black
+						border border-teal-200
+						rounded-md
+						py-1
+						pl-2
+					"
+					type="text"
+					v-model="film.writer"
+					id="filmWrite"
+				/>
+			</div>
+			<div class="px-4 md:px-6 pb-2">
+				<label
+					class="text-teal-900 text-sm bg-white font-semibold"
+					for="filmDirector"
+				>
+					Director
+				</label>
+				<input
+					class="
+						focus:border-teal-500
+						focus:ring-1
+						focus:ring-teal-500
+						focus:outline-none
+						w-full
+						text-sm text-black
+						border border-teal-200
+						rounded-md
+						py-1
+						pl-2
+					"
+					type="text"
+					v-model="film.director"
+					id="filmDirector"
+				/>
+			</div>
+			<div class="px-4 md:px-6 pb-2 flex gap-4">
+				<div class="flex-1">
+					<label
+						class="text-teal-900 text-sm bg-white font-semibold"
+						for="filmRelease"
+					>
+						Release date
+					</label>
+					<input
+						class="
+							focus:border-teal-500
+							focus:ring-1
+							focus:ring-teal-500
+							focus:outline-none
+							w-full
+							text-sm text-black
+							border border-teal-200
+							rounded-md
+							py-1
+							pl-2
+						"
+						type="date"
+						v-model="film['release-date']"
+						min="1900-01-01"
+						max="2100-12-31"
+						id="filmRelease"
+					/>
 				</div>
-				<div class="p-4">
-					<div>
-						{{
-							film.description ||
-							film.storyline ||
-							'Missing description of the film.'
-						}}
-					</div>
-					<div class="pt-4">
-						<span class="font-bold block text-teal-900">Actors:</span>
-						<span v-for="actor in film.actors" class="block">{{ actor }}</span>
-						<textarea name="" id="" cols="50" rows="3" @keyup="changeActors">{{
-							film.actors.join(', ')
-						}}</textarea>
-					</div>
+				<div class="flex-1">
+					<label
+						class="text-teal-900 text-sm bg-white font-semibold"
+						for="filmYear"
+					>
+						Year
+					</label>
+					<input
+						class="
+							focus:border-teal-500
+							focus:ring-1
+							focus:ring-teal-500
+							focus:outline-none
+							w-full
+							text-sm text-black
+							border border-teal-200
+							rounded-md
+							py-1
+							pl-2
+						"
+						type="number"
+						min="1900"
+						max="2100"
+						v-model.number="film.year"
+						id="filmYear"
+					/>
 				</div>
-			</main>
+			</div>
+			<div class="px-4 md:px-6 pb-2">
+				<label
+					class="text-teal-900 text-sm bg-white font-semibold"
+					for="filmLength"
+				>
+					Film length (in minutes)
+				</label>
+				<input
+					class="
+						focus:border-teal-500
+						focus:ring-1
+						focus:ring-teal-500
+						focus:outline-none
+						w-full
+						text-sm text-black
+						border border-teal-200
+						rounded-md
+						py-1
+						pl-2
+					"
+					type="number"
+					min="1"
+					max="500"
+					v-model="film.runtime"
+					id="filmLength"
+				/>
+			</div>
 			<footer
-				@click="putFilmList(film.id)"
+				@click="togglePut"
 				class="
 					hover:cursor-pointer
 					w-full
@@ -161,6 +397,7 @@ const putFilmList = (id: any) => {
 					bg-red-200
 					rounded-b-lg
 				"
+				title="Save and close"
 			>
 				SAVE
 			</footer>
