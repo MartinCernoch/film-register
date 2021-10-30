@@ -8,7 +8,8 @@ const props = defineProps<{
 const film: FilmListItem = { ...props.film }
 
 const emit = defineEmits<{
-	(e: 'hide', filmToPut?: FilmListItem): void
+	(e: 'hide'): void
+	(e: 'save', filmToSave: FilmListItem): void
 }>()
 
 const toggleModal = () => {
@@ -16,7 +17,7 @@ const toggleModal = () => {
 }
 
 const togglePut = () => {
-	emit('hide', film)
+	emit('save', film)
 }
 
 const changeToArray = (e: string) => e.split(',').map((e: string) => e.trim())

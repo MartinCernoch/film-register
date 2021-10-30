@@ -8,14 +8,15 @@ const props = defineProps<{
 const film: FilmListItem = props.film
 
 const emit = defineEmits<{
-	(e: 'hide', filmEdit?: FilmListItem): void
+	(e: 'hide'): void
+	(e: 'edit', filmEdit: FilmListItem): void
 }>()
 
-const toggleModal = (e: any) => {
+const toggleModal = () => {
 	emit('hide')
 }
-const toggleEdit = (e: any) => {
-	emit('hide', film)
+const toggleEdit = () => {
+	emit('edit', film)
 }
 </script>
 

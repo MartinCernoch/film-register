@@ -19,6 +19,12 @@ const state = reactive({
 	editFilm: {} as FilmListItem,
 })
 
+const filteredFilms = computed(() => {
+	return state.filmList.filter((item: FilmListItem) => {
+		return item?.name?.toLowerCase().includes(props.searchQuery)
+	})
+})
+
 const getFilmList = () => {
 	ApiServices.getList()
 		.then((response) => {
@@ -29,39 +35,31 @@ const getFilmList = () => {
 		})
 }
 
-const putFilmToDatabase = (putFilm: FilmListItem | undefined) => {
-	if (putFilm !== undefined) {
-		ApiServices.putItem(putFilm.id, putFilm)
-			.catch((error) => {
-				console.log(error)
-			})
-			.finally(() => {
-				getFilmList()
-				state.editFilmDetail = false
-			})
-	} else {
-		state.editFilmDetail = false
-	}
+const putFilmToDatabase = (putFilm: FilmListItem) => {
+	ApiServices.putItem(putFilm.id, putFilm)
+		.catch((error) => {
+			console.log(error)
+		})
+		.finally(() => {
+			getFilmList()
+			state.editFilmDetail = false
+		})
 }
 
-const filteredFilms = computed(() => {
-	return state.filmList.filter((item: FilmListItem) => {
-		return item?.name?.toLowerCase().includes(props.searchQuery)
-	})
-})
-
 const showDetail = (showFilm: FilmListItem) => {
-	state.showFilmDetail = !state.showFilmDetail
+	state.showFilmDetail = true
 	state.showFilm = showFilm
 }
 
-const toggleModal = (filmEdit: FilmListItem | undefined) => {
+const toggleModalFalse = () => {
 	state.showFilmDetail = false
 	state.editFilmDetail = false
-	if (filmEdit !== undefined) {
-		state.editFilmDetail = !state.editFilmDetail
-		state.editFilm = filmEdit
-	}
+}
+
+const toggleEdit = (filmEdit: FilmListItem) => {
+	state.showFilmDetail = false
+	state.editFilmDetail = true
+	state.editFilm = filmEdit
 }
 
 getFilmList()
@@ -71,12 +69,14 @@ getFilmList()
 	<FilmDetail
 		v-if="state.showFilmDetail"
 		:film="state.showFilm"
-		v-on:hide="toggleModal($event)"
+		v-on:hide="toggleModalFalse"
+		v-on:edit="toggleEdit($event)"
 	/>
 	<FilmEdit
 		v-if="state.editFilmDetail"
 		:film="state.editFilm"
-		v-on:hide="putFilmToDatabase($event)"
+		v-on:hide="toggleModalFalse"
+		v-on:save="putFilmToDatabase($event)"
 	/>
 
 	<main class="p-4 grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-4">
